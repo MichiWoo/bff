@@ -1,24 +1,29 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
-import classNames from 'classnames';
-import { logoutRequest } from "../actions";
-import gravatar from '../utils/gravatar';
-import '../assets/styles/components/Header.scss';
-import logo from '../assets/static/logo-platzi-video-BW2.png';
-import userIcon from '../assets/static/user-icon.png';
+import React from 'react'
+import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
+import classNames from 'classnames'
+import { logoutRequest } from "../actions"
+import gravatar from '../utils/gravatar'
+import '../assets/styles/components/Header.scss'
+import logo from '../assets/static/logo-platzi-video-BW2.png'
+import userIcon from '../assets/static/user-icon.png'
 
 const Header = props => {
-  const { user, isLogin, isRegister } = props;
-  const hasUser = Object.keys(user).length > 0;
+  const { user, isLogin, isRegister } = props
+  const hasUser = Object.keys(user).length > 0
   const HeaderClass = classNames('header', {
     isLogin,
     isRegister,
-  });
+  })
   const handleLogout = () => {
-    props.logoutRequest({});
-  };
+    document.cookie = "email="
+    document.cookie = "name="
+    document.cookie = "id="
+    document.cookie = "token="
+    props.logoutRequest({})
+    window.location.href = '/login'
+  }
   return (
     <header className={HeaderClass}>
       <Link to="/">
@@ -35,24 +40,24 @@ const Header = props => {
         </ul>
       </div>
     </header>
-  );
+  )
 }
 
 const mapStateToProps = state => {
   return {
     user: state.user,
-  };
-};
+  }
+}
 
 const mapDispatchToProps = {
   logoutRequest,
-};
+}
 
 Header.propTypes = {
   user: PropTypes.object,
   isLogin: PropTypes.bool,
   isRegister: PropTypes.bool,
   logoutRequest: PropTypes.func,
-};
+}
 
-export default connect(mapStateToProps, mapDispatchToProps)(Header);
+export default connect(mapStateToProps, mapDispatchToProps)(Header)
