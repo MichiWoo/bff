@@ -60,7 +60,6 @@ export const loginUser = ({ email, password }, redirectUrl) => {
         document.cookie = `email=${data.user.email}`
         document.cookie = `name=${data.user.name}`
         document.cookie = `id=${data.user.id}`
-        document.cookie = `token=${data.user.token}`
         dispatch(loginRequest(data.user))
       })
       .then(() => {
@@ -68,6 +67,27 @@ export const loginUser = ({ email, password }, redirectUrl) => {
       })
       .catch((err) => dispatch(setError(err)))
   }
+}
+
+export const favoriteMovie = ({ userId, movie, cb }) => {
+  const data = {
+    userId,
+    movieId: movie._id
+  }
+  axios({
+    url: `/user-movies`,
+    method: 'post',
+    data
+  })
+  .then(({ data }) => {
+    const { data: { movieExist }} = data
+    const message = movieExist ? `${movie.title} ya está en tus favoritos` : `${movie.title} fue agregada a tus favoritos`
+    !movieExist && dispatch(setFavorite(movie))
+    cb(movieExist, message)
+  })
+  .catch((err) => dispatch(setError(err)))
+
+
 }
 
 export { setFavorite as default }

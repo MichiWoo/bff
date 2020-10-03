@@ -9,10 +9,10 @@ import plusIcon from '../assets/static/plus-icon.png'
 import removeIcon from '../assets/static/remove-icon.png'
 
 const CarouselItem = (props) => {
-  const { id, cover, title, year, contentRating, duration, isList, slug, source } = props;
+  const { _id, id, cover, title, year, contentRating, duration, isList, slug, source } = props;
   const handleSetFavorite = () => {
     props.setFavorite({
-      id, cover, title, year, contentRating,
+      _id, id, cover, title, year, contentRating,
       duration, isList, slug, source
     });
   }
@@ -40,7 +40,7 @@ const CarouselItem = (props) => {
                 className="carousel-item__details--img"
                 src={removeIcon}
                 alt="Quitar de mi lista"
-                onClick={() => handleDeleteFavorite(id)}
+                onClick={() => handleDeleteFavorite(_id)}
               />
             )
           }

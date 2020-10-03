@@ -10,15 +10,15 @@ import { StaticRouter } from 'react-router-dom'
 import { renderRoutes } from 'react-router-config'
 import { Provider } from 'react-redux'
 import { createStore } from 'redux'
+import cookieParser from 'cookie-parser'
+import boom from '@hapi/boom'
+import passport from 'passport'
+import axios from 'axios'
 import reducer from '../frontend/reducers'
 import Layout from '../frontend/components/Layout'
 import serverRoutes from '../frontend/routes/serverRoutes'
 import getManifest from './getManifest'
 
-import cookieParser from 'cookie-parser'
-import boom from '@hapi/boom'
-import passport from 'passport'
-import axios from 'axios'
 
 dotenv.config()
 
@@ -78,20 +78,41 @@ const setResponse = (html, preloadedState, manifest) => {
   )
 }
 
-const renderApp = (req, res) => {
+const renderApp = async (req, res) => {
   let initialState;
-  const { email, name, id } = req.cookies
+  const { token, email, name, id } = req.cookies
 
-  if (id) {
+  try {
+    let movieList = await axios({
+      url: `${process.env.API_URL}/api/movies`,
+      headers: { Authorization: `Bearer ${token}` },
+      method: 'get'
+    })
+    movieList = movieList.data.data
+
+    let userMovies = await axios({
+      url: `${process.env.API_URL}/api/user-movies`,
+      headers: { Authorization: `Bearer ${token}`},
+      method: 'get'
+    })
+    userMovies = userMovies.data.data
+    const myList = []
+    userMovies.map( (userMovie) => {
+      const movie = movieList.find((movieL) => movieL._id === userMovie.movieId)
+      if (movie) {
+        myList.push(movie)
+      }
+    })
+
     initialState = {
       user: {
         email, name, id
       },
-      myList: [],
-      trends: [],
-      originals: [],
+      myList,
+      trends: movieList.filter((movie) => movie.contentRating === 'PG' && movie._id),
+      originals: movieList.filter((movie) => movie.contentRating === 'G' && movie._id)
     }
-  } else {
+  } catch (err) {
     initialState = {
       user: {},
       myList: [],
@@ -162,6 +183,30 @@ app.post("/auth/sign-up", async function(req, res, next) {
     })
   } catch (error) {
     next(error)
+  }
+})
+
+app.post("user-movies", async(req, res, next) => {
+  try {
+    const { body: userMovie } = req
+    const { token } = req.cookies
+    const { data, status } = await axios({
+      url: `${process.env.API_URL}/api/user-movies`,
+      headers: { Authorization: `Bearer ${token}`},
+      method: 'post',
+      data: userMovie
+    })
+    const { movieExist } = data
+
+    if (status !== 200 && status !== 201) {
+      return next(boom.badImplementation())
+    }
+
+    const statusCode = movieExist ? 200 : 201
+    return res.status(statusCode).json(data)
+
+  } catch (err) {
+    next(err)
   }
 })
 
